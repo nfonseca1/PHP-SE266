@@ -13,11 +13,10 @@ for ($rows=1; $rows <= 10; $rows++){
         $table .= (string)$hexDig;
         $table .= "\" >";
         $table .= "<pre>";
-        $table .= (string)$hexDig .= " 
-";
-        $table .= "<font color=\"white\">";
         $table .= (string)$hexDig;
-        $table .= "</font>";
+        $table .= "\n<span style=\"color:white\">";
+        $table .= (string)$hexDig;
+        $table .= "</span>";
         $table .= "</pre>";
         $table .= "</td>";
 
