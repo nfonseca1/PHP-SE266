@@ -48,7 +48,7 @@ function UpdateCategory($pdo, $cat, $catText)
 //Product functions
 function CreateAddProductForm($pdo)
 {
-    echo "<form action='index.php' method='post' enctype='multipart/form-data'>";
+    echo "<form action='../admin/index.php' method='post' enctype='multipart/form-data'>";
     echo "<label for='category'>Category</label>";
     echo "<select id='category' name='category'>";
 
@@ -88,7 +88,7 @@ function AddProduct($pdo, $cat, $product, $price, $image)
     }
 }
 
-function Filter($pdo, $cat, $priceMin, $priceMax)
+function Filter($pdo, $cat, $priceMin, $priceMax, $path, $isAdmin = false)
 {
     if($cat == "all")
     {
@@ -110,13 +110,21 @@ function Filter($pdo, $cat, $priceMin, $priceMax)
     foreach($products as $product)
     {
         echo "<tr>";
-        echo "<td><img src='images/" . $product->image . "' style='height: 150px;'></td>";
+        echo "<td><img src='$path" . $product->image . "' style='height: 150px;'></td>";
         echo "<td><h3>" . $product->product . "</h3></td>";
         echo "<td><h3>$" . $product->price . "</h3></td>";
-        echo "<td>";
-        echo "<p><a href='index.php?updateID=".$product->product_id."'>Update</a></p>";
-        echo "<p><a href='index.php?deleteID=".$product->product_id."'>Delete</a></p>";
-        echo "</td>";
+        if ($isAdmin)
+        {
+            echo "<td>";
+            echo "<p><a href='index.php?updateID=".$product->product_id."'>Update</a></p>";
+            echo "<p><a href='index.php?deleteID=".$product->product_id."'>Delete</a></p>";
+            echo "</td>";
+        }
+        else {
+            echo "<td>";
+            echo "<a href='checkout.php?addID=" . $product->product_id . "'>Add to Cart</a></p>";
+            echo "</td>";
+        }
         echo "</tr>";
     }
     echo "</table>";

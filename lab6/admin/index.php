@@ -3,7 +3,7 @@ session_start();
 
 include '../includes/database.php';
 include '../includes/header.php';
-include 'handler.php';
+include '../includes/handler.php';
 
 if (!$_SESSION['isLoggedIn']){
     echo "You are not logged in as an admin";
@@ -111,8 +111,10 @@ if(isset($_POST['filter']))
     $priceMax = 999999;
     if($_POST['priceMax']!=""){$priceMax = $_POST['priceMax'];}
     $cat = $_POST['category'];
+    $imagePath = 'images/';
+    $isAdmin = $_SESSION['isLoggedIn'];
 
-    Filter($pdo, $cat, $priceMin, $priceMax);
+    Filter($pdo, $cat, $priceMin, $priceMax, $imagePath, $isAdmin);
 }
 
 if ( !empty($_GET['updateID'])) {

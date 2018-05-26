@@ -11,12 +11,12 @@
     <header>
         <table>
             <tr>
-                <td><h2>Horizon</h2></td>
+                <td><a href="index.php"><h2>Horizon</h2></a></td>
                 <td><form action="../index.php" method="get">
                         <input type="text" placeholder="Search" name="search">
                         <button type="submit" name="submit">Search</button>
                     </form></td>
-                <td><a href="#">Cart</a></td>
+                <td><a href="cart.php">Cart</a></td>
                 <td><a href="register.php">Logout</a></td>
             </tr>
         </table>

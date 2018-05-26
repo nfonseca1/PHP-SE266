@@ -1,43 +1,52 @@
-
 <?php
+session_start();
 include 'includes/database.php';
 include 'includes/header.php';
+include 'includes/handler.php';
+
+$pdo = dbConn();
+$_SESSION['redirect'] = "index.php";
+
+//Get all categories to display in drop down
+$pdo = dbConn();
+$sql = 'SELECT category FROM categories';
+$stmt = $pdo->prepare($sql);
+$stmt->execute();
+$categories = $stmt->fetchAll(PDO::FETCH_OBJ);
 ?>
 
-            <?php
-            $pdo = dbconn();
-            if ( isset( $_GET['action1']) )
-            {
-                $col = $_GET['col'];
-                $dir = $_GET['dir'];
-            } else {
-                $col = 'id';
-                $dir = 'ASC';
-            }
-            if ( isset( $_GET['action2']) )
-            {
-                $col2 = $_GET['col2'];
-                $term = $_GET['term'];
-            } else {
-                $col2 = 'corp';
-                $term = '';
-            }
-
-            $sql = 'SELECT corp, id FROM corps WHERE ' . $col2 . ' LIKE ' . "'%" . $term . "%'" . ' ORDER BY '. $col . ' ' . $dir;
-            foreach ($pdo->query($sql) as $row) {
-                echo '<tr>';
-                echo '<td>'. $row['corp'] . '</td>';
-                echo '<td width=250>';
-                echo '<a href="read.php?id='.$row['id'].'">Read</a>';
-                echo ' ';
-                echo '<a href="update.php?id='.$row['id'].'">Update</a>';
-                echo ' ';
-                echo '<a href="delete.php?id='.$row['id'].'">Delete</a>';
-                echo '</td>';
-                echo '</tr>';
-            }
-            ?>
+<h3>Filter:</h3>
+<form action="index.php" method="POST">
+    <label for="category">Category</label>
+    <select id="category" name="category">
+        <option value="all">All</option>
+        <?php
+        foreach($categories as $category){
+            echo "<option value='$category->category'>"
+                . $category->category . "</option>";
+        }
+        ?>
+    </select>
+    <label for="priceMin">Price Range</label>
+    <input type="number" id="priceMin" name="priceMin" placeholder="Min">
+    <span> to </span>
+    <input type="number" id="priceMax" name="priceMax" placeholder="Max">
+    <button type="submit" name="filter">Filter Results</button>
+</form>
 
 <?php
+
+if(isset($_POST['filter']))
+{
+    $priceMin = 0;
+    if($_POST['priceMin']!=""){$priceMin = $_POST['priceMin'];}
+    $priceMax = 999999;
+    if($_POST['priceMax']!=""){$priceMax = $_POST['priceMax'];}
+    $cat = $_POST['category'];
+    $imagePath = 'admin/images/';
+
+    Filter($pdo, $cat, $priceMin, $priceMax, $imagePath);
+}
+
 include('includes/footer.php');
 ?>
