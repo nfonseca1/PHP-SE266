@@ -1,14 +1,17 @@
 <?php
 session_start();
-
-include '../includes/database.php';
-include '../includes/header.php';
-include '../includes/handler.php';
-
+//Make sure admin is logged in, otherwise, redirect
 if (!$_SESSION['isLoggedIn']){
     echo "You are not logged in as an admin";
     header("Location: register.php");
 }
+else {
+    $_SESSION['userLoggedIn'] = false;
+}
+
+include '../includes/database.php';
+include '../includes/header.php';
+include '../includes/handler.php';
 
 //Get all categories to display in drop down
 $pdo = dbConn();
@@ -33,7 +36,7 @@ if(isset($_POST['update']))
     UpdateCategory($pdo, $_POST['category'], $_POST['categoryText']);
 }
 
-//Handle product CRUD
+//Add product to database
 if(isset($_POST['submitAdd']))
 {
     $cat = $_POST['category'];
@@ -59,9 +62,11 @@ if(isset($_POST['submitAdd']))
 }
 ?>
 
-<form action="index.php" method="POST">
-    <label for="category">Category</label>
-    <select id="category" name="category">
+<form class="form-inline" action="index.php" method="POST">
+    <div class="form-group">
+        <label for="category">Category</label>
+        <select class="form-control" id="category" name="category">
+    </div>
         <?php
         foreach($categories as $category){
             echo "<option value='$category->category'>"
@@ -69,41 +74,46 @@ if(isset($_POST['submitAdd']))
         }
         ?>
     </select>
-    <button type="submit" name="delete">Delete</button>
-    <input type="text" id="categoryText" name="categoryText">
-    <button type="submit" name="add">Add</button>
-    <button type="submit" name="update">Update</button>
+    <button class="btn btn-danger" type="submit" name="delete">Delete</button>
+    <input class="form-control" type="text" id="categoryText" name="categoryText" placeholder="Category">
+    <button class="btn btn-success" type="submit" name="add">Add</button>
+    <button class="btn btn-info" type="submit" name="update">Update</button>
 </form>
 
 <h3>Filter:</h3>
-<form action="index.php" method="POST">
-    <label for="category">Category</label>
-    <select id="category" name="category">
-        <option value="all">All</option>
-        <?php
-        foreach($categories as $category){
-            echo "<option value='$category->category'>"
-                . $category->category . "</option>";
-        }
-        ?>
-    </select>
-    <label for="priceMin">Price Range</label>
-    <input type="number" id="priceMin" name="priceMin" placeholder="Min">
-    <span> to </span>
-    <input type="number" id="priceMax" name="priceMax" placeholder="Max">
-    <button type="submit" name="filter">Filter Results</button>
+<form action="index.php" method="POST" class="form-inline">
+    <div class="form-group">
+        <label for="category">Category</label>
+        <select class="form-control" id="category" name="category">
+            <option value="all">All</option>
+            <?php
+            foreach($categories as $category){
+                echo "<option value='$category->category'>"
+                    . $category->category . "</option>";
+            }
+            ?>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="priceMin">Price Range</label>
+        <input type="number" class="form-control" id="priceMin" name="priceMin" placeholder="Min">
+        <label>to</label>
+        <input type="number" class="form-control" id="priceMax" name="priceMax" placeholder="Max">
+    </div>
+    <button type="submit" class="btn btn-default" name="filter">Filter Results</button>
 </form>
-
+</br>
 <form action="index.php" method="POST">
-    <button type="submit" name="addProduct">Add New Product</button>
+    <button class="btn btn-primary" type="submit" name="addProduct">Add New Product</button>
 </form>
+</br>
 <?php
 //Create add product form when clicking 'add product'
 if(isset($_POST['addProduct']))
 {
     CreateAddProductForm($pdo);
 }
-
+//Filter Results
 if(isset($_POST['filter']))
 {
     $priceMin = 0;
@@ -116,7 +126,16 @@ if(isset($_POST['filter']))
 
     Filter($pdo, $cat, $priceMin, $priceMax, $imagePath, $isAdmin);
 }
+//Get results from search bar
+if(isset($_POST['submitSearch']))
+{
+    $imagePath = 'images/';
+    $isAdmin = $_SESSION['isLoggedIn'];
+    $term = $_POST['search'];
 
+    Search($pdo, $term, $imagePath, $isAdmin);
+}
+//Setup product update form when clicking "update"
 if ( !empty($_GET['updateID'])) {
 
     $id = $_REQUEST['updateID'];
@@ -131,9 +150,10 @@ if ( !empty($_GET['updateID'])) {
     $stmt->execute([$product->category_id]);
     $defaultCat = $stmt->fetch(PDO::FETCH_OBJ);
 
-    echo "<form action='index.php' method='post' enctype='multipart/form-data'>";
+    echo "<form class='form-inline' action='index.php' method='post' enctype='multipart/form-data'>";
+    echo "<div class='form-group'>";
     echo "<label for='category'>Category</label>";
-    echo "<select id='category' name='category'>";
+    echo "<select class='form-control' id='category' name='category'>";
 
     $sql = 'SELECT category FROM categories';
     $stmt = $pdo->prepare($sql);
@@ -147,17 +167,24 @@ if ( !empty($_GET['updateID'])) {
         echo ">" . $category->category . "</option>";
     }
     echo "</select>";
+    echo "</div>";
+    echo "<div class='form-group'>";
     echo "<label for='product'>Product</label>";
-    echo "<input type='text' id='product' name='product' value='$product->product' required>";
+    echo "<input class='form-control' type='text' id='product' name='product' value='$product->product' required>";
+    echo "</div>";
+    echo "<div class='form-group'>";
     echo "<label for='price'>Price</label>";
-    echo "<input type='text' id='price' name='price' value='$product->price' required>";
+    echo "<input class='form-control' type='text' id='price' name='price' value='$product->price' required>";
+    echo "</div>";
+    echo "<div class='form-group'>";
     echo "<label for='image'>Image</label>";
-    echo "<input type='file' id='image' name='image'>";
+    echo "<input class='form-control' type='file' id='image' name='image'>";
     echo "<input type='hidden' name = 'updateID' value='$id'>";
-    echo "<button type='submit' name='submitUpdate'>Update Product</button>";
+    echo "</div>";
+    echo "<button class='btn btn-info' type='submit' name='submitUpdate'>Update Product</button>";
     echo "</form>";
 }
-
+//Update product in database
 if(isset($_POST['submitUpdate']))
 {
     $id = $_POST['updateID'];
@@ -185,7 +212,7 @@ if(isset($_POST['submitUpdate']))
     }
 
 }
-
+//Delete product from database
 if ( !empty($_GET['deleteID']))
 {
     $id = $_REQUEST['deleteID'];

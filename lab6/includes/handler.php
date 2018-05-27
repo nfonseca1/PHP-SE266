@@ -1,5 +1,5 @@
 <?php
-//Category fuctions
+//Category functions
 function DeleteCategory($pdo, $cat)
 {
     $sql = "DELETE FROM categories WHERE category = ?";
@@ -49,8 +49,9 @@ function UpdateCategory($pdo, $cat, $catText)
 function CreateAddProductForm($pdo)
 {
     echo "<form action='../admin/index.php' method='post' enctype='multipart/form-data'>";
+    echo "<div class='form-group'>";
     echo "<label for='category'>Category</label>";
-    echo "<select id='category' name='category'>";
+    echo "<select class='form-control' id='category' name='category'>";
 
     $sql = 'SELECT category FROM categories';
     $stmt = $pdo->prepare($sql);
@@ -61,13 +62,20 @@ function CreateAddProductForm($pdo)
             . $category->category . "</option>";
     }
     echo "</select>";
+    echo "</div>";
+    echo "<div class='form-group'>";
     echo "<label for='product'>Product</label>";
-    echo "<input type='text' id='product' name='product' required>";
+    echo "<input class='form-control' type='text' id='product' name='product' required>";
+    echo "</div>";
+    echo "<div class='form-group'>";
     echo "<label for='price'>Price</label>";
-    echo "<input type='text' id='price' name='price' required>";
+    echo "<input class='form-control' type='text' id='price' name='price' required>";
+    echo "</div>";
+    echo "<div class='form-group'>";
     echo "<label for='image'>Image</label>";
-    echo "<input type='file' id='image' name='image'>";
-    echo "<button type='submit' name='submitAdd'>Add Product</button>";
+    echo "<input class='form-control' type='file' id='image' name='image'>";
+    echo "</div>";
+    echo "<button class='btn btn-primary' type='submit' name='submitAdd'>Add Product</button>";
     echo "</form>";
 }
 
@@ -106,7 +114,24 @@ function Filter($pdo, $cat, $priceMin, $priceMax, $path, $isAdmin = false)
         $stmt->execute([$catID, $priceMin, $priceMax]);
     }
     $products = $stmt->fetchAll(PDO::FETCH_OBJ);
-    echo "<table>";
+
+    DisplayProducts($products, $path, $isAdmin);
+}
+
+function Search($pdo, $term, $path, $isAdmin = false)
+{
+    $sql = "SELECT * FROM products WHERE product LIKE " . "'%" . $term . "%'" . " ORDER BY product_id ASC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    $products = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+    DisplayProducts($products, $path, $isAdmin);
+}
+
+function DisplayProducts($products, $path, $isAdmin)
+{
+    echo "<table class='table table-striped'>";
+    echo "<tr><td>Preview</td><td>Product</td><td>Price</td><td></td></tr>";
     foreach($products as $product)
     {
         echo "<tr>";
@@ -122,7 +147,7 @@ function Filter($pdo, $cat, $priceMin, $priceMax, $path, $isAdmin = false)
         }
         else {
             echo "<td>";
-            echo "<a href='checkout.php?addID=" . $product->product_id . "'>Add to Cart</a></p>";
+            echo "<a href='cart.php?addID=" . $product->product_id . "'>Add to Cart</a></p>";
             echo "</td>";
         }
         echo "</tr>";
@@ -166,4 +191,73 @@ function DeleteProduct($pdo, $id)
     else {
         header("Location: index.php");
     }
+}
+
+// Validation
+function ValidateIdenticalEmails($email, $email2)
+{
+    if($email == $email2) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+function ValidateEmail($email)
+{
+    if(filter_var($email, FILTER_VALIDATE_EMAIL))
+    {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+function ValidateIdenticalPasswords($password, $password2)
+{
+    if($password == $password2) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+function ValidatePassword($password)
+{
+    if(strlen($password) > 3)
+    {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+function ValidateRegister($email, $email2, $password, $password2)
+{
+    if(ValidateIdenticalEmails($email, $email2)) {
+        if(ValidateEmail($email)) {
+            if(ValidateIdenticalPasswords($password, $password2)) {
+                if(ValidatePassword($password)) {
+                    return true;
+                }
+                else {
+                    echo "Password must be more than 3 characters";
+                }
+            }
+            else {
+                echo "Passwords do not match";
+            }
+        }
+        else {
+            echo "Email is not valid";
+        }
+    }
+    else {
+        echo "Emails do not match";
+    }
+    return false;
 }

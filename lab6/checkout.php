@@ -3,13 +3,13 @@ session_start();
 include 'includes/database.php';
 include 'includes/header.php';
 include 'includes/handler.php';
-
+//Make sure they're logged in, otherwise, redirect
 if (!$_SESSION['userLoggedIn']){
     echo "You are not logged in";
     $_SESSION['redirect'] = "checkout.php";
     header("Location: register.php");
 }
-
+//Store temporary vars to hold orderItem info
 $_SESSION['total'] = 0;
 $_SESSION['taxAmount'] = 0.07;
 $_SESSION['shipping'] = 0.00;
@@ -26,7 +26,7 @@ $pdo = dbConn();
 <h2>Order Summary:</h2>
 
 <?php
-
+//Add the prices together to get total and calculate tax
 foreach($_SESSION['cart'] as $orderItem => $orderQty)
 {
     $sql = 'SELECT * FROM products WHERE product_id = ?';
@@ -34,39 +34,41 @@ foreach($_SESSION['cart'] as $orderItem => $orderQty)
     $stmt->execute([$orderItem]);
     $product = $stmt->fetch(PDO::FETCH_OBJ);
 
-    $_SESSION['total'] = $_SESSION['total'] + $product->price;
+    $_SESSION['total'] = $_SESSION['total'] + $product->price * $orderQty;
 }
 
 $_SESSION['tax'] = $_SESSION['total'] * $_SESSION['taxAmount'];
 $_SESSION['tax'] = round($_SESSION['tax'], 2);
 ?>
 
-<table>
+<table class="table table-striped">
     <tr>
-        <td><h2>Items: </h2></h3></td>
-        <td><h2>$<?php echo $_SESSION['total']; ?></h2></td>
+        <td><h3>Items: </h3></h3></td>
+        <td><h3>$<?php echo $_SESSION['total']; ?></h3></td>
     </tr>
     <tr>
-        <td><h2>Tax: </h2></h3></td>
-        <td><h2>$<?php echo $_SESSION['tax']; ?></h2></td>
+        <td><h3>Tax: </h3></h3></td>
+        <td><h3>$<?php echo $_SESSION['tax']; ?></h3></td>
     </tr>
     <tr>
-        <td><h2>Shipping: </h2></h3></td>
-        <td><h2>$<?php echo $_SESSION['shipping']; ?></h2></td>
+        <td><h3>Shipping: </h3></h3></td>
+        <td><h3>$<?php echo $_SESSION['shipping']; ?></h3></td>
     </tr>
     <tr>
-        <td><h2>Total: </h2></h3></td>
-        <td><h2>$<?php echo $_SESSION['total'] + $_SESSION['tax'] + $_SESSION['shipping']; ?></h2></td>
+        <td><h3>Total: </h3></h3></td>
+        <td><h3>$<?php echo $_SESSION['total'] + $_SESSION['tax'] + $_SESSION['shipping']; ?></h3></td>
     </tr>
 </table>
-<form action="orders.php" method="POST">
+<br/>
+<form class="form-inline" action="orders.php" method="POST">
     <h2>Address: </h2>
+    <div class="form-group">
     <label for="street">Street </label>
-    <input type="text" id="street" name="street" placeholder="Type anything in here" required>
+    <input class="form-control" type="text" id="street" name="street" placeholder="Type anything in here" required>
     <label for="city">City </label>
-    <input type="text" id="city" name="city" placeholder="Type anything in here" requirec>
+    <input class="form-control" type="text" id="city" name="city" placeholder="Type anything in here" requirec>
     <label for="state">State </label>
-    <select id="state" name="state">
+    <select class="form-control" id="state" name="state">
         <?php
             foreach($states as $state){
                 echo "<option>$state</option>\n";
@@ -74,17 +76,20 @@ $_SESSION['tax'] = round($_SESSION['tax'], 2);
         ?>
     </select>
     <label for="zip">Zip Code </label>
-    <input type="text" id="zip" name="zip" placeholder="Type anything in here" requirec>
+    <input class="form-control" type="text" id="zip" name="zip" placeholder="Type anything in here" requirec>
+    </div>
 
     <h2>Payment: </h2>
+    <div class="form-group">
     <label for="cardNumber">Credit Card Number</label>
-    <input type="number" id="cardNumber" name="cardNumber" placeholder="Type anything in here" requirec>
+    <input class="form-control" type="number" id="cardNumber" name="cardNumber" placeholder="Type anything in here" requirec>
     <label for="cvc">CVC</label>
-    <input type="number" id="cvc" name="cvc" placeholder="Type anything in here" requirec>
+    <input class="form-control" type="number" id="cvc" name="cvc" placeholder="Type anything in here" requirec>
     <label for="date">Expiration Date</label>
-    <input type="text" id="date" name="date" placeholder="Type anything in here" requirec>
+    <input class="form-control" type="text" id="date" name="date" placeholder="Type anything in here" requirec>
+    </div>
 
-    <p><button type="submit" name="placeOrder">Place Order</button></p>
+    <p><button class="btn btn-primary" type="submit" name="placeOrder">Place Order</button></p>
 </form>
 <?php
 

@@ -1,5 +1,7 @@
 <?php
 session_start();
+$_SESSION['isLoggedIn'] = false;
+
 include 'includes/database.php';
 include 'includes/header.php';
 include 'includes/handler.php';
@@ -16,26 +18,31 @@ $categories = $stmt->fetchAll(PDO::FETCH_OBJ);
 ?>
 
 <h3>Filter:</h3>
-<form action="index.php" method="POST">
-    <label for="category">Category</label>
-    <select id="category" name="category">
-        <option value="all">All</option>
-        <?php
-        foreach($categories as $category){
-            echo "<option value='$category->category'>"
-                . $category->category . "</option>";
-        }
-        ?>
-    </select>
+<form action="index.php" method="POST" class="form-inline">
+    <div class="form-group">
+        <label for="category">Category</label>
+        <select class="form-control" id="category" name="category">
+            <option value="all">All</option>
+            <?php
+            foreach($categories as $category){
+                echo "<option value='$category->category'>"
+                    . $category->category . "</option>";
+            }
+            ?>
+        </select>
+    </div>
+    <div class="form-group">
     <label for="priceMin">Price Range</label>
-    <input type="number" id="priceMin" name="priceMin" placeholder="Min">
-    <span> to </span>
-    <input type="number" id="priceMax" name="priceMax" placeholder="Max">
-    <button type="submit" name="filter">Filter Results</button>
+    <input type="number" class="form-control" id="priceMin" name="priceMin" placeholder="Min">
+    <label>to</label>
+    <input type="number" class="form-control" id="priceMax" name="priceMax" placeholder="Max">
+    </div>
+    <button type="submit" class="btn btn-default" name="filter">Filter Results</button>
 </form>
+<br/>
 
 <?php
-
+//Filter Results
 if(isset($_POST['filter']))
 {
     $priceMin = 0;
@@ -46,6 +53,14 @@ if(isset($_POST['filter']))
     $imagePath = 'admin/images/';
 
     Filter($pdo, $cat, $priceMin, $priceMax, $imagePath);
+}
+//Get results from search bar
+if(isset($_POST['submitSearch']))
+{
+    $imagePath = 'admin/images/';
+    $term = $_POST['search'];
+
+    Search($pdo, $term, $imagePath);
 }
 
 include('includes/footer.php');
